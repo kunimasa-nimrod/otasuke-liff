@@ -39,10 +39,8 @@ try {
     if (idToken === undefined) return;
     if (!idToken) { throw new Error("IDトークンを取得できませんでした（スコープにopenidが含まれているかご確認ください）"); }
     setMsg("⑤トークン取得完了、サーバーに送信中");
-    return fetch(EXEC_URL + "?action=verifyLiff", {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: idToken
+    return fetch(EXEC_URL + "?action=verifyLiff&token=" + encodeURIComponent(idToken), {
+      method: "GET"
     }).then(function (res) {
       setMsg("⑥サーバー応答受信（status " + res.status + "）");
       if (!res.ok) { throw new Error("サーバー応答エラー（status " + res.status + "）"); }
