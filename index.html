@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約確認</title>
+<style>
+*{box-sizing:border-box;}
+body{font-family:sans-serif;margin:0;padding:40px 24px;background:#f4f7f6;color:#1c2a28;text-align:center;}
+#msg{font-size:28px;line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+.err{color:#B33A2E;font-size:20px;text-align:left;background:#fff;border-radius:12px;padding:20px;margin-top:24px;}
+</style>
+</head>
+<body>
+<div id="msg">①ページを読み込みました</div>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+var LIFF_ID = "2011572748-fZQLj5Xp";
+var EXEC_URL = "https://script.google.com/macros/s/AKfycbw74dNhvVp3lMGQRSW6nI-1fKhJHjCUJVr0KLGuGzWDnQhQ95zCmsv2nFKrD0XzFYpJ/exec";
+
+function setMsg(t){ document.getElementById("msg").textContent = t; }
+function showErr(label,e){
+  var detail = (e && (e.message || (e.toString && e.toString()))) ? (e.message || e.toString()) : String(e);
+  document.getElementById("msg").innerHTML = document.getElementById("msg").textContent + "<br><br>エラーが発生しました。<br>" +
+    "<div class=\"err\">" + label + "<br>" + detail + "</div>";
+}
+var settled = false;
+setTimeout(function(){
+  if(!settled){ showErr("タイムアウト（12秒経過）", "この番号の直前の表示で止まっています。"); }
+}, 12000);
+try {
+  setMsg("②SDK読み込み完了、init開始");
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    setMsg("③init完了、ログイン状態確認");
+    if (!liff.isLoggedIn()) { setMsg("④未ログイン、ログイン画面へ移動します"); liff.login(); return undefined; }
+    setMsg("④ログイン済み、トークン取得中");
+    return liff.getIDToken();
+  }).then(function (idToken) {
+    if (idToken === undefined) return;
+    if (!idToken) { throw new Error("IDトークンを取得できませんでした（スコープにopenidが含まれているかご確認ください）"); }
+    setMsg("⑤トークン取得完了、サーバーに送信中");
+    return fetch(EXEC_URL + "?action=verifyLiff", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: idToken
+    }).then(function (res) {
+      setMsg("⑥サーバー応答受信（status " + res.status + "）");
+      if (!res.ok) { throw new Error("サーバー応答エラー（status " + res.status + "）"); }
+      return res.text();
+    }).then(function (respHtml) {
+      settled = true;
+      document.open(); document.write(respHtml); document.close();
+    });
+  }).catch(function (e) {
+    settled = true;
+    showErr("処理中にエラーが発生しました", e);
+  });
+} catch (e) {
+  settled = true;
+  showErr("初期化エラー", e);
+}
+</script>
+</body>
+</html>
