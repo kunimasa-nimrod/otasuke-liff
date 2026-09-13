@@ -38,17 +38,10 @@ try {
   }).then(function (idToken) {
     if (idToken === undefined) return;
     if (!idToken) { throw new Error("IDトークンを取得できませんでした（スコープにopenidが含まれているかご確認ください）"); }
-    setMsg("⑤トークン取得完了、サーバーに送信中");
-    return fetch(EXEC_URL + "?action=verifyLiff&token=" + encodeURIComponent(idToken), {
-      method: "GET"
-    }).then(function (res) {
-      setMsg("⑥サーバー応答受信（status " + res.status + "）");
-      if (!res.ok) { throw new Error("サーバー応答エラー（status " + res.status + "）"); }
-      return res.text();
-    }).then(function (respHtml) {
-      settled = true;
-      document.open(); document.write(respHtml); document.close();
-    });
+    setMsg("⑤トークン取得完了、予約確認ページへ移動します");
+    settled = true;
+    window.location.href = EXEC_URL + "?action=verifyLiff&token=" + encodeURIComponent(idToken);
+    return;
   }).catch(function (e) {
     settled = true;
     showErr("処理中にエラーが発生しました", e);
