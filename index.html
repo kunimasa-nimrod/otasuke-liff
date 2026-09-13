@@ -38,19 +38,14 @@ try {
   }).then(function (idToken) {
     if (idToken === undefined) return;
     if (!idToken) { throw new Error("IDトークンを取得できませんでした（スコープにopenidが含まれているかご確認ください）"); }
-    setMsg("⑤トークン取得完了、予約確認ページへ移動します");
+    setMsg("⑤トークン取得完了");
     settled = true;
-    var form = document.createElement("form");
-    form.method = "POST";
-    form.action = EXEC_URL + "?action=verifyLiff";
-    var input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "token";
-    input.value = idToken;
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-    return;  }).catch(function (e) {
+    var url = EXEC_URL + "?action=verifyLiff&token=" + encodeURIComponent(idToken);
+    document.getElementById("msg").innerHTML =
+      "認証が完了しました。<br><br>" +
+      "<a href=\"" + url + "\" style=\"display:inline-block;padding:24px 40px;background:#1F6F68;color:#fff;border-radius:16px;font-size:30px;text-decoration:none;font-weight:700;\">予約内容を確認する</a>";
+    return;
+  }).catch(function (e) {
     settled = true;
     showErr("処理中にエラーが発生しました", e);
   });
